@@ -24,7 +24,7 @@ const createCampaign = async (req, res) => {
             description,
             desiredAmount,
             raisedAmount:0,
-            imageUrls: req.body.imageUrls,
+            imageUrls: req.imageUrls,
             address
         });
 

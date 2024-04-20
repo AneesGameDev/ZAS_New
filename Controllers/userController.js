@@ -3,7 +3,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Joi = require('joi');
 const nodemailer = require('nodemailer');
-const fs = require("fs").promises;
+const path = require("path"); // Import the path module
+const fs = require("fs");
 require('dotenv').config();
 
 
@@ -599,13 +600,16 @@ const updateProfile = async (req, res) => {
 
     try {
         // Check if a profile image was uploaded
-        const profileImage = req.file ? req.file.path : undefined;
+        const profileImage = req.fileUrl ? req.fileUrl : undefined;
 
         // Your logic to validate user data (excluding email and password)
         const { error } = validateUpdateUser({ firstName, lastName, bio, contactNumber, address });
         if (error) {
             return res.status(400).json({ message: error.details[0].message });
         }
+
+        const currentUser = await User.findById(userId);
+        const currentProfileImage = currentUser.profileImage;
 
         // Your logic to update the user profile (excluding email and password)
         const updatedFields = {
@@ -619,9 +623,20 @@ const updateProfile = async (req, res) => {
         // If a profile image was uploaded, add it to the updated fields
         if (profileImage) {
             updatedFields.profileImage = profileImage;
+
+            if (currentProfileImage) {
+               
+                const filePath = path.resolve(__dirname, '..',  currentProfileImage);
+                if (fs.existsSync(filePath)) {
+                    // Delete the file
+                    fs.unlinkSync(filePath);
+                } else {
+                    console.error(`File not found: ${filePath}`);
+                }
+            }
         }
 
-        const updatedUser = await User.findByIdAndUpdate( {_id :userId}, updatedFields, { new: true });
+        const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, { new: true });
 
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
@@ -635,7 +650,86 @@ const updateProfile = async (req, res) => {
 };
 
 
+/*
+const updateProfile = async (req, res) => {
+    const userId = req.userId;
+    const { firstName, lastName, bio, contactNumber, address } = req.body;
 
+    try {
+        // Check if a profile image was uploaded
+        const profileImage = req.fileUrl ? req.fileUrl : undefined;
+
+        // Your logic to validate user data (excluding email and password)
+        const { error } = validateUpdateUser({ firstName, lastName, bio, contactNumber, address });
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
+
+        // Get the user's current profile image URL from the database
+        const currentUser = await User.findById(userId);
+        const currentProfileImage = currentUser.profileImage;
+
+        // Your logic to update the user profile (excluding email and password)
+        const updatedFields = {
+            firstName,
+            lastName,
+            bio,
+            contactNumber,
+            address,
+        };
+
+        // If a profile image was uploaded, add it to the updated fields
+      /*  if (profileImage) {
+            updatedFields.profileImage = profileImage;
+            
+            // Delete the previous profile image if it exists
+            if (currentProfileImage) {
+                fs.unlinkSync(path.join(__dirname, currentProfileImage));
+            }
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, { new: true });
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ message: "Profile updated successfully", user: updatedUser });
+    } catch (error) {
+        console.error('Update Profile Error:', error);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+*/
+
+const getProfileImage = async (req, res) => {
+    const userId = req.userId;
+
+    try {
+        // Fetch the user to get the profile image filename
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if the user has a profile image
+        if (!user.profileImage) {
+            return res.status(404).json({ message: "Profile image not found" });
+        }
+
+        // Construct the URL of the profile image based on the filename
+        const profileImageUrl = `${user.profileImage}`;
+
+        // Send the profile image URL in the response body
+        res.status(200).json({ profileImageUrl });
+    } catch (error) {
+        console.error('Get Profile Image Error:', error);
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
+/*
 const getProfileImage = async (req, res) => {
     const userId = req.userId;
 
@@ -664,5 +758,5 @@ const getProfileImage = async (req, res) => {
     }
 };
 
-
+*/
 module.exports = { signup, signin ,siginbyjwt , getUsersForAdmin,updateProfile ,getProfileImage , sendOTPAndVerified , verifyOTPAndSetActivate , activateDeactivateUser , resetPasswordRequest ,matchOTPsetNewPassword};

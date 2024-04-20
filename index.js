@@ -5,6 +5,7 @@ const campaignRouter = require("./routes/CampaignRouter")
 const paymentRouter = require("./routes/PaymentsRouter")
 const feedbackRouter = require("./routes/FeedbackRouter");
 const educationalRouter =require("./routes/EducationalRouter");
+const path = require("path"); 
 const mongoose = require("mongoose");
 const app  = express();
 app.use(express.json());
@@ -16,6 +17,12 @@ app.use("/api/campaign" , campaignRouter);
 app.use("/api/payments" , paymentRouter);
 app.use("/api/feedback" , feedbackRouter);
 app.use("/api/educational" , educationalRouter);
+
+// Serve static files from the "Uploads" folder
+
+app.use("/Uploads", express.static(path.join(__dirname, "Uploads")));
+app.use("/UploadsProfile", express.static(path.join(__dirname, "UploadsProfile")));
+
 
 
 
