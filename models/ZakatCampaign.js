@@ -35,6 +35,10 @@ const CampaignSchema = new mongoose.Schema({
         type: String,
         enum: ['active', 'inactive', 'completed'],
         default: 'active'
+    },
+    UniqueId:{
+        type: String,
+        required: true
     }
 }, { timestamps: true });
 
@@ -47,7 +51,8 @@ const campaignValidationSchema = Joi.object({
     raisedAmount: Joi.number().default(0),
     imageUrls: Joi.array().items(Joi.string()),
     address: Joi.string().required(),
-    status: Joi.string().valid('active', 'inactive', 'completed').default('active')
+    status: Joi.string().valid('active', 'inactive', 'completed').default('active'),
+    UniqueId: Joi.string().required()
 });
 
 // Joi validation function

@@ -4,7 +4,7 @@ const auth = require("../middlewares/auth");
 const {handleImageUpload} = require("../middlewares/ImgUpload")
 const CampaignRouter = express.Router();
 
-CampaignRouter.post("/create",auth,handleImageUpload, createCampaign);
+CampaignRouter.post("/create",auth, createCampaign);
 
 CampaignRouter.get("/mycampaigns", auth, getMyCampaignsByStatus); //http://localhost:5000/api/userCampaign/mycampaigns?status=active
 CampaignRouter.get("/campaigns", auth, getCampaignById); //http://localhost:5000/api/userCampaign/campaigns?campaignId=658709b83641d2dada6aa34c

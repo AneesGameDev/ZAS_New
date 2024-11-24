@@ -33,7 +33,10 @@ const signup = async (req, res) => {
             address,
             role
         });
-        return res.status(401).json({ message: "User is created successfully" });
+
+       
+        
+       // return res.status(401).json({ message: "User is created successfully" });
 
     } catch (error) {
         console.log(error);
@@ -140,13 +143,13 @@ const sendOTP = async (email, otp) => {
         service: 'gmail',
         auth: {
             user: "ockmicrosoft.games@gmail.com",
-            pass: "dkne iahk raiy lieo"
+            pass: "gjpi iuqz jsla mkxy"
 
         }
     });
 
     const mailOptions = {
-        from: 'anees.narsun@gmail.com',
+        from: 'ockmicrosoft.games@gmail.com',
         to: email,
         subject: 'Zakat Automation System Verification OTP',
         text: `Your OTP for email verification is: ${otp}. It will expire in 24 hours.`
