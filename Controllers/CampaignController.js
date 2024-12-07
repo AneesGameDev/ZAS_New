@@ -113,28 +113,43 @@ const updateCampaign = async (req,res)=>{
 };
 
 
-
-
 const getAllCampaigns = async (req, res) => {
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10;  // Number of campaigns per page
-
     try {
-        // Find all campaigns with pagination and exclude completed and inactive campaigns
+        // Find all campaigns excluding completed and inactive ones
         const zakatCampaigns = await ZakatCampaign.find({
             status: { $nin: ['completed', 'inactive'] }
-        })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .sort({ createdAt: -1 }); // Sort by creation date in descending order
+        }).sort({ createdAt: -1 });  // Sort by creation date in descending order
 
-        res.status(200).json(zakatCampaigns);
+        // Return the response with the same structure as the previous function
+        res.status(200).json({ items: zakatCampaigns });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error fetching campaigns' });
     }
 };
+
+
+//const getAllCampaigns = async (req, res) => {
+
+//    const page = parseInt(req.query.page) || 1;
+//    const limit = 10;  // Number of campaigns per page
+
+//    try {
+        // Find all campaigns with pagination and exclude completed and inactive campaigns
+//        const zakatCampaigns = await ZakatCampaign.find({
+//            status: { $nin: ['completed', 'inactive'] }
+//        })
+//            .skip((page - 1) * limit)
+//            .limit(limit)
+//            .sort({ createdAt: -1 }); // Sort by creation date in descending order
+
+//        res.status(200).json(zakatCampaigns);
+//    } catch (error) {
+//        console.error(error);
+//        res.status(500).json({ message: 'Error fetching campaigns' });
+//    }
+//};
 
 // const getMyCampaignsByStatus = async (req, res) => {
 
