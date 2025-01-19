@@ -5,23 +5,24 @@ const PaymentsSchema = new mongoose.Schema({
     senderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
     },
     receiverId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
     },
     campaignId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Campaign',
-        required: true
+        required: true,
     },
     amount: {
         type: Number,
-        required: true
+        required: true,
     },
 }, { timestamps: true });
+
 
 
 

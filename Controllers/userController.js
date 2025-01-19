@@ -596,14 +596,14 @@ const matchOTPsetNewPassword = async (req, res) => {
 
 
 
-
+/*
 const updateProfile = async (req, res) => {
     const userId = req.userId;
-    const { firstName, lastName, bio, contactNumber, address } = req.body;
+    const { firstName, lastName, bio, contactNumber, address , profileImage} = req.body;
 
     try {
         // Check if a profile image was uploaded
-        const profileImage = req.fileUrl ? req.fileUrl : undefined;
+       // const profileImage = req.fileUrl ? req.fileUrl : undefined;
 
         // Your logic to validate user data (excluding email and password)
         const { error } = validateUpdateUser({ firstName, lastName, bio, contactNumber, address });
@@ -621,23 +621,8 @@ const updateProfile = async (req, res) => {
             bio,
             contactNumber,
             address,
+            profileImage,
         };
-
-        // If a profile image was uploaded, add it to the updated fields
-        if (profileImage) {
-            updatedFields.profileImage = profileImage;
-
-            if (currentProfileImage) {
-               
-                const filePath = path.resolve(__dirname, '..',  currentProfileImage);
-                if (fs.existsSync(filePath)) {
-                    // Delete the file
-                    fs.unlinkSync(filePath);
-                } else {
-                    console.error(`File not found: ${filePath}`);
-                }
-            }
-        }
 
         const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, { new: true });
 
@@ -651,6 +636,56 @@ const updateProfile = async (req, res) => {
         res.status(500).json({ message: "Something went wrong" });
     }
 };
+*/
+
+
+
+
+const updateProfile = async (req, res) => {
+    const userId = req.userId; // Assuming this comes from authentication middleware
+    const { firstName, lastName, bio, contactNumber, address } = req.body;
+    let profileImage = req.body.profileImage; // Assuming profileImage comes in req.body
+
+    try {
+        // Validate the input fields (excluding email and password)
+        const { error } = validateUpdateUser({ firstName, lastName, bio, contactNumber, address });
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
+
+        // Retrieve the current user
+        const currentUser = await User.findById(userId);
+        if (!currentUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Use the existing profile image if no new one is provided
+        if (!profileImage) {
+            profileImage = currentUser.profileImage;
+        }
+
+        // Prepare updated fields, excluding undefined values
+        const updatedFields = {};
+        if (firstName) updatedFields.firstName = firstName;
+        if (lastName) updatedFields.lastName = lastName;
+        if (bio) updatedFields.bio = bio;
+        if (contactNumber) updatedFields.contactNumber = contactNumber;
+        if (address) updatedFields.address = address;
+        if (profileImage) updatedFields.profileImage = profileImage;
+
+        // Update the user in the database
+        const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, { new: true });
+        if (!updatedUser) {
+            return res.status(404).json({ message: "Failed to update user profile" });
+        }
+
+        res.status(200).json({ message: "Profile updated successfully", user: updatedUser });
+    } catch (error) {
+        console.error('Update Profile Error:', error);
+        res.status(500).json({ message: "An unexpected error occurred" });
+    }
+};
+
 
 
 /*
