@@ -58,99 +58,66 @@ const createPayment = async (req, res) => {
     }
 };
 */
-
 const createPayment = async (req, res) => {
     const userId = req.userId;  // The sender's user ID (the one making the payment)
     const senderId = userId;    // Sender ID
 
     const { campaignId, amount } = req.body;  // Extract campaign ID and amount from the request body
 
-    console.log("Received Request:");
-    console.log(`User ID (Sender): ${userId}`);
-    console.log(`Campaign ID: ${campaignId}`);
-    console.log(`Amount: ${amount}`);
-
     try {
         // 1. Find the campaign by the given campaignId
-        console.log("Fetching Campaign...");
         const campaign = await ZakatCampaign.findById(campaignId);
         if (!campaign) {
-            console.log("Campaign not found");
             return res.status(404).json({ message: 'Campaign not found' });
         }
-        console.log("Campaign Found: ", campaign);
 
         // 2. The receiver of the payment is the campaign owner (identified by UniqueId)
-        const receiverId = campaign.userId;  // This is the campaign owner's ID (UniqueId)
-        console.log(`Receiver ID (Campaign Owner): ${receiverId}`);
+        const receiverId = campaign.userId;
 
         // 3. Check if the sender exists
-        console.log("Checking if Sender Exists...");
         const existingSender = await User.findById(senderId);
         if (!existingSender) {
-            console.log("Sender not found");
             return res.status(404).json({ message: 'Sender not found' });
         }
-        console.log("Sender Found: ", existingSender);
 
         // 4. Check if the receiver exists (the owner of the campaign)
-        console.log("Checking if Receiver Exists...");
         const existingReceiver = await User.findById(receiverId);
         if (!existingReceiver) {
-            console.log("Receiver (Campaign Owner) not found");
             return res.status(404).json({ message: 'Receiver (campaign owner) not found' });
         }
-        console.log("Receiver Found: ", existingReceiver);
-
-        // 5. Check if the campaign exists (repeated check after the initial one)
-        console.log("Checking if Campaign Exists...");
-        // const existingCampaign = await ZakatCampaign.findById(campaignId);
-        // if (!existingCampaign) {
-        //     console.log("Campaign not found");
-        //     return res.status(404).json({ message: 'Campaign not found' });
-        // }
-        // console.log("Campaign Exists: ", existingCampaign);
 
         const paymentData = {
-            senderId: new mongoose.Types.ObjectId(senderId),  // Convert senderId to ObjectId if not already
-            receiverId, // Convert receiverId to ObjectId if not already
-            campaignId: new mongoose.Types.ObjectId(campaignId), // Convert campaignId to ObjectId if not already
-            amount,     // The amount of money being paid
+            senderId: new mongoose.Types.ObjectId(senderId),
+            receiverId,
+            campaignId: new mongoose.Types.ObjectId(campaignId),
+            amount,
         };
 
-        // 6. Create a new payment record
-        console.log("Creating new Payment...",paymentData);
+        // 5. Create a new payment record
         const newPayment = await Payments.create(paymentData);
-        console.log("New Payment Created: ", newPayment);
 
-        // 7. Update the raisedAmount in the campaign to reflect the payment
-        console.log("Updating Raised Amount in Campaign...");
+        // 6. Update the raisedAmount in the campaign to reflect the payment
         const updatedCampaign = await ZakatCampaign.findByIdAndUpdate(
             { _id: campaignId },
-            { $inc: { raisedAmount: amount } },  // Increment the raisedAmount with the payment amount
+            { $inc: { raisedAmount: amount } },
             { new: true }
         );
-        console.log("Updated Campaign: ", updatedCampaign);
 
-        // 8. Check if the raised amount is greater than or equal to the desired amount
-        console.log("Checking if raisedAmount is >= desiredAmount...");
+        // 7. Check if the raised amount is greater than or equal to the desired amount
         if (updatedCampaign.raisedAmount >= updatedCampaign.desiredAmount) {
-            console.log("Campaign raised amount meets or exceeds desired amount. Marking as completed.");
-            // If the raised amount meets or exceeds the desired amount, set the campaign status to 'completed'
             updatedCampaign.status = 'completed';
-            await updatedCampaign.save();  // Save the updated campaign
-            console.log("Campaign Status updated to 'completed'");
+            await updatedCampaign.save();
         }
 
-        // 9. Return the newly created payment and the updated campaign
-        console.log("Returning Response...");
-        res.status(201).json({ newPayment, updatedCampaign });
+        // 8. Return success message
+        return res.status(201).json({ message: 'Payment created successfully' });
 
     } catch (error) {
-        console.error("Error during payment creation:", error);
-        res.status(500).json({ message: 'Error creating payment' });
+        // Return error message
+        return res.status(500).json({ message: 'Error creating payment' });
     }
 };
+
 
 
 
